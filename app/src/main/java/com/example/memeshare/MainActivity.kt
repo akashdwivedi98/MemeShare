@@ -1,5 +1,7 @@
 package com.example.memeshare
 
+import android.graphics.drawable.Drawable
+import android.opengl.Visibility
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.View
@@ -11,6 +13,10 @@ import com.android.volley.toolbox.StringRequest
 import com.android.volley.toolbox.Volley
 import com.bumptech.glide.Glide
 import com.bumptech.glide.GlideContext
+import com.bumptech.glide.load.DataSource
+import com.bumptech.glide.load.engine.GlideException
+import com.bumptech.glide.request.RequestListener
+import com.bumptech.glide.request.target.Target
 import kotlinx.android.synthetic.main.activity_main.*
 
 class MainActivity : AppCompatActivity() {
@@ -21,6 +27,7 @@ class MainActivity : AppCompatActivity() {
     }
       private fun loadMeme(){
           // Instantiate the RequestQueue.
+          progressBar.visibility = View.VISIBLE
           val queue = Volley.newRequestQueue(this)
           val url = "https://meme-api.herokuapp.com/gimme"
 
@@ -29,7 +36,18 @@ class MainActivity : AppCompatActivity() {
               Request.Method.GET, url, null,
               Response.Listener { response ->
                 val url = response.getString("url")
-                  Glide.with(this).load(url).into(memeImageView)
+                  Glide.with(this).load(url).listener(object : RequestListener<Drawable> {
+
+                      override fun onLoadFailed(e: GlideException?, model: Any?, target: Target<Drawable>?, isFirstResource: Boolean): Boolean {
+                         progressBar.visibility = View.GONE
+                          return false
+                      }
+
+                      override fun onResourceReady(resource: Drawable?, model: Any?, target: Target<Drawable>?, dataSource: DataSource?, isFirstResource: Boolean): Boolean {
+                          progressBar.visibility = View.GONE
+                          return false
+                      }
+                  }).into(memeImageView)
               },
               Response.ErrorListener {
               Toast.makeText(this, "Something went wrong", Toast.LENGTH_LONG).show()
@@ -39,7 +57,7 @@ class MainActivity : AppCompatActivity() {
           queue.add(JsonObjectRequest)
 }
     fun nextMeme(view: View) {
-
+        loadMeme()
     }
 
     fun shareMeme(view: View) {
